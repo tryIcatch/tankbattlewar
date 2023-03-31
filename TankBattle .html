@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TankBattle</title>
+</head>
+
+<style>
+    * {
+        margin:0;
+        padding:0;
+    }
+    html,body{
+        height:100%;
+    }
+    #brick{
+        display: flex;
+        width: 50%;
+        flex-direction: column;
+        height:100%;
+        background-color:white;
+    }
+    #middle{
+        height: 100%;
+        background-color: whitesmoke;
+        display: flex;
+        flex-direction: row;
+
+    }
+
+    #right,#left{
+
+
+    }
+    #playyard{
+        width:100%;
+    }
+     #bottom,#top{
+         display: flex;
+         flex-direction: row;
+         height: 2%;
+         margin-top: 0px;
+     }
+     .walls{
+         width: 20px;
+         border: palevioletred 2px ;
+         height: 20px;
+     }
+.grass{
+    position: absolute;
+    width: 80px;
+    height: 80px;
+}
+.ftank{
+    width: 60px;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+}
+.wallgroup{
+    position: absolute;
+}
+.ltank, .rtank{
+    width: 25px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: absolute;
+}
+.dtank{
+    width: 60px;
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+}
+.bullet{
+    width: 10px;
+    height: 10px;
+    background-color: black;
+    border: black 0px solid;
+    border-radius: 10px;
+    position: absolute;
+}
+</style>
+
+<body>
+<div id="brick">
+
+    <div id="top"></div>
+    <div id="middle">
+        <div id="left"> </div>
+        <div id="playyard"></div>
+        <div id="right" ></div>
+    </div>
+    <div id="bottom"></div>
+
+</div>
+
+</body>
+
+<script>
+    var playyard=document.getElementById("playyard");
+   var viewheight=playyard.offsetHeight;
+   var viewwidth=playyard.offsetWidth;
+   var wallsgroup='<div class="walls">墙</div>';
+   var lrnum=viewheight/20;
+   var tbnum=viewwidth/20;
+
+
+
+   document.getElementById("left").innerHTML=wallsgroup;
+   document.getElementById("right").innerHTML=wallsgroup;
+   for (let i = 0; i <lrnum-1 ; i++) {
+       document.getElementById("left").innerHTML=document.getElementById("left").innerHTML+wallsgroup;
+       document.getElementById("right").innerHTML=document.getElementById("right").innerHTML+wallsgroup;
+       if(getElementPagePosition(document.getElementById("left").lastElementChild).y>viewheight || getElementPagePosition(document.getElementById("right").lastElementChild).y>viewheight){break;}
+   }
+
+
+   document.getElementById("top").innerHTML=wallsgroup;
+   document.getElementById("bottom").innerHTML=wallsgroup;
+   for (let a = 0; a <tbnum-2 ; a++) {
+       document.getElementById("top").innerHTML=document.getElementById("top").innerHTML+wallsgroup;
+       document.getElementById("bottom").innerHTML=document.getElementById("bottom").innerHTML+wallsgroup;
+       if(getElementPagePosition(document.getElementById("top").lastElementChild).x>viewwidth || getElementPagePosition(document.getElementById("bottom").lastElementChild).x>viewwidth){break;}
+
+   }
+
+
+    for (let b=0; b<=3;b++){
+        let grass=document.createElement("div");
+        grass.className="grass";
+        grass.innerText="草草草草草草草草草草草草草草草草草草草草";
+        let grassrangex=Math.random()*viewwidth;
+        let grassrangey=Math.random()*viewheight;
+        grass.style.top=grassrangey-50+"px";
+        grass.style.left=grassrangex-50+"px";
+        grass.style.color="green";
+        playyard.appendChild(grass);
+    }
+
+   for (let i = 0; i < 2; i++) {
+       let tank=document.createElement("div");
+       tank.id="tank"+i;
+       tank.className="ftank";
+       if(i==1){
+           tank.style.top=viewheight-20+"px";
+           tank.style.left=viewwidth-100+"px";
+       }else {
+           tank.style.top=50+"px";
+           tank.style.left=50+"px";
+       }
+       tank.innerHTML='<div><h4 >炮</h4></div>\n' + '<div><h2>坦克</h2></div>\n';
+       playyard.append(tank);
+   }
+
+   for (let i = 0; i < 2; i++) {
+       let a=Math.random()*220;
+       let b=Math.random()*180;
+       let c=Math.random()*255;
+       document.getElementById("tank"+i).style.color='rgb('+a+','+b+','+c+')';
+   }
+
+
+   for (let b=0; b<=5;b++){
+       let wallsgroup=document.createElement("div");
+       wallsgroup.className="wallgroup";
+       wallsgroup.innerText='墙墙墙墙墙墙墙墙墙墙墙墙墙墙墙墙墙';
+       let wallsgroupx=Math.random()*viewwidth;
+       let wallsgroupy=Math.random()*viewheight;
+       if(b%2==1){
+           wallsgroup.style.width=275+"px";
+           wallsgroup.style.height=25+"px";
+       }else {
+           wallsgroup.style.width=20+"px";
+           wallsgroup.style.height=360+"px";
+       }
+       if(wallsgroupx-250<0){
+           wallsgroupx=wallsgroupx+300;
+       }
+       if(wallsgroupy-250<0){
+           wallsgroupy=wallsgroupy+300;
+       }
+       wallsgroup.style.top=wallsgroupy-250+"px";
+       wallsgroup.style.left=wallsgroupx-250+"px";
+       wallsgroup.style.color="DimGrey"
+       playyard.append(wallsgroup);
+   }
+
+
+
+
+
+    function crash(node1,node2){
+        var l1 = node1.offsetLeft;
+        var r1=node1.offsetLeft + node1.offsetWidth;
+
+        var t1 =node1.offsetTop;
+        var b1=node1.offsetTop + node1.offsetHeight;
+
+        var l2=node2.offsetLeft;
+        var r2 = node2.offsetLeft + node2.offsetWidth;
+
+        var t2=node2.offsetTop;
+        var b2=node2.offsetTop + node2.offsetHeight;
+
+        if(l1> r2 || l2 > r1 || t1> b2 || t2 > b1){
+
+            return false;
+        }else{
+             return  true;
+        }
+    }
+   function tcrack(node1,node2){
+       var l1 = node1.offsetLeft;
+       var r1=node1.offsetLeft + node1.offsetWidth;
+
+       var t1 =node1.offsetTop;
+       var b1=node1.offsetTop + node1.offsetHeight;
+
+       var l2=node2.offsetLeft;
+       var r2 = node2.offsetLeft + node2.offsetWidth;
+
+       var t2=node2.offsetTop;
+       var b2=node2.offsetTop + node2.offsetHeight;
+
+       if(l1> r2 || l2 > r1 || t1> b2 || t2 > b1){
+
+           return false;
+       }else{
+           if(t2 < b1){
+               return "f";
+           }else if(t1< b2 ){
+               return "d";
+           } else if(l2<r1){
+               return "l";
+           }else if(l1<r2){
+               return "r";
+           }
+
+       }
+   }
+   function randomcolor(){
+
+           let a=Math.random()*220;
+           let b=Math.random()*180;
+           let c=Math.random()*255;
+          return [a,b,c];
+
+   }
+
+
+
+   var wallgroup =[];
+   var wtop=document.getElementById("top");
+   var wleft=document.getElementById("left");
+   var wbottom=document.getElementById("bottom");
+   var wright=document.getElementById("right");
+
+   var l=document.getElementsByClassName("wallgroup").length;
+    for (let i = 0; i <l ; i++) {
+        wallgroup.push(document.getElementsByClassName("wallgroup")[i]);
+    }
+
+
+    function awaysflyf(o){
+
+        var goonforward= setInterval(function(){
+            document.getElementsByClassName("bullet")[o-1].style.top=document.getElementsByClassName("bullet")[o-1].offsetTop-20+"px";
+            IsLive(o);
+            for (let i = 0; i < l; i++) {
+                if(checkCollision( document.getElementsByClassName("bullet")[o-1],wallgroup[i]) ||checkCollision(wtop,document.getElementsByClassName("bullet")[o-1])){
+                    clearInterval(goonforward);
+                    awaysflyd(o);
+                    break;
+                }
+
+            }
+        }, 100);
+
+    }
+
+    function awaysflyd(o){
+        var goondown= setInterval(function(){
+            IsLive(o);
+            document.getElementsByClassName("bullet")[o-1].style.top=document.getElementsByClassName("bullet")[o-1].offsetTop+20+"px";
+            for (let i = 0; i < l; i++) {
+                if(checkCollision( document.getElementsByClassName("bullet")[o-1],wallgroup[i]) ||checkCollision(wbottom,document.getElementsByClassName("bullet")[o-1])){
+                    clearInterval(goondown);
+                    awaysflyf(o);
+                    break;
+                }
+            }
+        }, 100);
+    }
+    function awaysflyl(o){
+
+        var goonleft= setInterval(function(){
+            IsLive(o);
+            document.getElementsByClassName("bullet")[o-1].style.left=document.getElementsByClassName("bullet")[o-1].offsetLeft-20+"px";
+            for (let i = 0; i < l; i++) {
+                if(checkCollision( document.getElementsByClassName("bullet")[o-1],wallgroup[i]) || checkCollision(wleft,document.getElementsByClassName("bullet")[o-1])){
+                    clearInterval(goonleft);
+                    awaysflyr(o);
+                    break;
+                }
+            }
+        }, 100);
+    }
+    function awaysflyr(o){
+
+        var goonright= setInterval(function(){
+            IsLive(o);
+            document.getElementsByClassName("bullet")[o-1].style.left=document.getElementsByClassName("bullet")[o-1].offsetLeft+20+"px";
+            for (let i = 0; i < l; i++) {
+                if(checkCollision( document.getElementsByClassName("bullet")[o-1],wallgroup[i]) || checkCollision(wright,document.getElementsByClassName("bullet")[o-1])){
+                    clearInterval(goonright);
+                    awaysflyl(o);
+                    break;
+                }
+            }
+        }, 100);
+    }
+
+    function  IsLive(len,i){
+        let tank0 =document.getElementById("tank0");
+        let tank1 =document.getElementById("tank0");
+        if(checkCollision(document.getElementsByClassName("bullet")[len-1],tank0) ){
+                playyard.removeChild(tank0);
+                alert("玩家0失败！")
+            }
+        if(checkCollision(document.getElementsByClassName("bullet")[len-1],tank1)){
+            playyard.removeChild(tank1);
+            alert("玩家1失败！")
+        }
+
+    }
+
+    function  fire(i){
+        let tank =document.getElementById("tank"+i);
+        let bullet=document.createElement("div");
+
+        if(tank.className=="ftank"){
+            bullet.style.top=tank.offsetTop-18+"px";
+            bullet.style.left=tank.offsetLeft+24+"px";
+
+        }
+        else if(tank.className=="dtank"){
+            bullet.style.top=tank.offsetTop+55+"px";
+            bullet.style.left=tank.offsetLeft+24+"px";
+
+        }  else if(tank.className=="ltank"){
+            bullet.style.left=tank.offsetLeft-24+"px";
+            bullet.style.top=tank.offsetTop+28+"px";
+
+        }  else if(tank.className=="rtank"){
+            bullet.style.left=tank.offsetLeft+55+"px";
+            bullet.style.top=tank.offsetTop+28+"px";
+
+        }
+
+        bullet.className="bullet";
+        bullet.style.backgroundColor='rgb('+randomcolor()[0]+','+randomcolor()[1]+','+randomcolor()[2]+')';
+        playyard.append(bullet);
+
+        let len=document.getElementsByClassName("bullet").length;
+
+        if(tank.className=="ftank"){
+
+         awaysflyf(len,i);
+        }
+        else if(tank.className=="dtank"){
+
+          awaysflyd(len,i);
+        }  else if(tank.className=="ltank"){
+
+            awaysflyl(len,i);
+        }  else if(tank.className=="rtank"){
+
+            awaysflyr(len,i);
+        }
+
+
+    }
+
+    var grass=document.getElementsByClassName("grass");
+
+    function  transparent(tank){
+        for (let i = 0; i <grass.length ; i++) {
+            if(checkCollision(grass[i],tank)){
+                tank.style.visibility="hidden";
+                return ;
+            }else {
+                tank.style.visibility="visible ";
+            }
+        }
+    }
+
+   function  goforward(i){
+       let tank =document.getElementById("tank"+i);
+       transparent(tank);
+       for (let j = 0; j <l ; j++) {
+           if(checkCollision(wallgroup[j],tank)  && tank.className=="ftank" ){
+               tank.style.top=(parseInt(tank.style.top.split("px")[0])+10)+"px";
+               return "f";
+           }
+       }
+       if(checkCollision(wtop,tank) && tank.className=="ftank"){
+           tank.style.top=(parseInt(tank.style.top.split("px")[0])+10)+"px";
+           return;
+       }
+
+
+       let y=tank.style.top.split("px")[0];
+       let x=tank.style.left.split("px")[0];
+       tank.className="ftank"
+       tank.style.left=x+"px";
+       tank.style.top=y+"px";
+       tank.innerHTML=" <div><h4 >炮</h4></div>"+"<div><h2>坦克</h2></div>\n"
+       tank.style.top=tank.style.top.split("px")[0]-30+"px";
+
+   }
+
+   function goleft(i){
+
+       let tank =document.getElementById("tank"+i);
+       transparent(tank);
+
+       for (let j = 0; j <l ; j++) {
+           if(checkCollision(wallgroup[j],tank) && tank.className=="ltank"){
+               tank.style.left=(parseInt(tank.style.left.split("px")[0])+10)+"px";
+               return "l";
+           }
+       }
+       if(checkCollision(wleft,tank)&& tank.className=="ltank"){
+           tank.style.left=(parseInt(tank.style.left.split("px")[0])+10)+"px";
+           return;
+       }
+       tank.innerHTML=" <div><h4 >炮</h4></div>"+"<div><h2>坦克</h2></div>\n"
+       let y=tank.style.top.split("px")[0];
+       let x=tank.style.left.split("px")[0];
+       tank.className="ltank"
+       tank.style.left=x+"px";
+       tank.style.top=y+"px";
+       tank.style.left=tank.style.left.split("px")[0]-10+"px";
+
+   }
+
+   function goright(i){
+       let tank =document.getElementById("tank"+i);
+
+       transparent(tank);
+       for (let j = 0; j <l ; j++) {
+           if(checkCollision(wallgroup[j],tank)&& tank.className=="rtank"  ){
+               tank.style.left=(parseInt(tank.style.left.split("px")[0])-10)+"px";
+               return "r";
+           }
+       }
+       if(checkCollision(wright,tank)&& tank.className=="rtank"){
+           tank.style.left=(parseInt(tank.style.left.split("px")[0])-10)+"px";
+           return;
+       }
+       tank.innerHTML="<div><h2>坦克</h2></div>\n" +
+           " <div><h4 >炮</h4></div>"
+       let y=tank.style.top.split("px")[0];
+       let x=tank.style.left.split("px")[0];
+       tank.className="rtank"
+       tank.style.left=x+"px";
+       tank.style.top=y+"px";
+       tank.style.left= (parseInt(tank.style.left.split("px")[0])+10)+"px";
+
+
+
+   }
+
+
+
+    function godown(i){
+        let tank =document.getElementById("tank"+i);
+        transparent(tank);
+        for (let j = 0; j <l ; j++) {
+            if(checkCollision(wallgroup[j],tank)&& tank.className=="dtank" ){
+                tank.style.top=(parseInt(tank.style.top.split("px")[0])-10)+"px";
+                return "d";
+            }
+        }
+
+
+        if(checkCollision(wbottom,tank)&& tank.className=="dtank"){
+            tank.style.top=(parseInt(tank.style.top.split("px")[0])-10)+"px";
+            return;
+        }
+        tank.innerHTML='  <div class="dtank">\n' +
+            '                <div><h2>坦克</h2></div>\n' +
+            '                <div><h4 >炮</h4></div>\n' +
+            '            </div>'
+        let y=tank.style.top.split("px")[0];
+        let x=tank.style.left.split("px")[0];
+        tank.className="dtank"
+        tank.style.left=x+"px";
+        tank.style.top=y+"px";
+        tank.style.top= (parseInt(tank.style.top.split("px")[0])+10)+"px";
+
+    }
+
+    function checkCollision(elem1, elem2) {
+        // 获取元素1的位置信息
+        const elem1Rect = elem1.getBoundingClientRect();
+        const elem1Left = elem1Rect.left;
+        const elem1Right = elem1Rect.right;
+        const elem1Top = elem1Rect.top;
+        const elem1Bottom = elem1Rect.bottom;
+
+        // 获取元素2的位置信息
+        const elem2Rect = elem2.getBoundingClientRect();
+        const elem2Left = elem2Rect.left;
+        const elem2Right = elem2Rect.right;
+        const elem2Top = elem2Rect.top;
+        const elem2Bottom = elem2Rect.bottom;
+
+        // 判断两个元素的边界框是否相交
+        if (elem1Left < elem2Right &&
+            elem1Right > elem2Left &&
+            elem1Top < elem2Bottom &&
+            elem1Bottom > elem2Top) {
+            // 发生碰撞
+            return true;
+        } else {
+            // 没有发生碰撞
+            return false;
+        }
+    }
+
+
+
+
+
+
+
+
+    document.onkeydown=function(event){
+
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        let flag= "t";
+        if(e && e.keyCode==87 && flag !="f"){
+           flag=goforward(1);
+        }
+        if(e && e.keyCode==65 && flag !="l"){
+
+            flag= goleft(1);
+        }
+        if(e && e.keyCode==68&& flag !="r"){
+            flag= goright(1);
+        }
+        if(e && e.keyCode==83&& flag !="d"){
+            flag= godown(1);
+        }
+        if(e && e.keyCode==74){
+             fire(1);
+        }
+        //-------------
+
+    };
+
+
+    document.onkeyup=function(event){
+        var e = event || window.event || arguments.callee.caller.arguments[0];
+        if(e && e.keyCode==38 ){
+            goforward(0);
+        }
+        if(e && e.keyCode==37 ){
+
+            goleft(0);
+        }
+        if(e && e.keyCode==39){
+            goright(0);
+        }
+        if(e && e.keyCode==40){
+            godown(0);
+        }
+        if(e && e.keyCode==110){
+            fire(0);
+        }
+    }
+
+
+
+
+
+
+
+    // 获取元素的绝对位置坐标（像对于页面左上角）
+   function getElementPagePosition(element){
+       //计算x坐标
+       var actualLeft = element.offsetLeft;
+       var current = element.offsetParent;
+       while (current !== null){
+           actualLeft += current.offsetLeft;
+           current = current.offsetParent;
+       }
+       //计算y坐标
+       var actualTop = element.offsetTop;
+       var current = element.offsetParent;
+       while (current !== null){
+           actualTop += (current.offsetTop+current.clientTop);
+           current = current.offsetParent;
+       }
+       //返回结果
+       return {x: actualLeft, y: actualTop}
+   }
+   // 获取元素的相对位置坐标（像对于浏览器视区左上角）
+   function getElementViewPosition(element){
+       //计算x坐标
+       var actualLeft = element.offsetLeft;
+       var current = element.offsetParent;
+       while (current !== null){
+           actualLeft +=  (current.offsetLeft+current.clientLeft);
+           current = current.offsetParent;
+       }
+       if (document.compatMode == "BackCompat"){
+           var elementScrollLeft=document.body.scrollLeft;
+       } else {
+           var elementScrollLeft=document.documentElement.scrollLeft;
+       }
+       var left = actualLeft - elementScrollLeft;
+       //计算y坐标
+       var actualTop = element.offsetTop;
+       var current = element.offsetParent;
+       while (current !== null){
+           actualTop += (current.offsetTop+current.clientTop);
+           current = current.offsetParent;
+       }
+       if (document.compatMode == "BackCompat"){
+           var elementScrollTop=document.body.scrollTop;
+       } else {
+           var elementScrollTop=document.documentElement.scrollTop;
+       }
+       var right = actualTop-elementScrollTop;
+       //返回结果
+       return {x: left, y: right}
+   }
+</script>
+</html>
